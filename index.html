@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eaf4fc">
+  <meta name="description" content="For my RJ. Happy birthday, Ritu.">
+  <title>Happy birthday, Ritu</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='.9em' font-size='56'%3E%F0%9F%92%8C%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <noscript><div class="noscript">Please enable JavaScript and refresh to open your surprise.</div></noscript>
+  <div class="sky-decoration" aria-hidden="true">
+    <div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
+    <span class="sky-star star-one">&#10022;</span><span class="sky-star star-two">&#10023;</span>
+    <span class="sky-star star-three">&#10022;</span>
+  </div>
+
+  <section id="gate" class="gate" aria-labelledby="gate-title">
+    <div class="gate-brand">For my RJ <span aria-hidden="true">&#9825;</span></div>
+    <div class="gate-card">
+      <div class="envelope" aria-hidden="true"><span>&#9829;</span></div>
+      <h1 id="gate-title">Hey, <em data-nickname>Ritu</em><span class="title-dot">.</span></h1>
+      <p id="gate-invitation" class="gate-invitation">Some dates are special, try one and unlock what lies ahead</p>
+      <form id="unlock-form">
+        <label class="sr-only" for="secret-code">Four-digit code</label>
+        <input id="secret-code" class="code-input" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="&#183; &#183; &#183; &#183;" aria-describedby="code-error" required>
+        <div class="keypad" aria-label="Code keypad">
+          <button type="button" data-digit="1">1</button><button type="button" data-digit="2">2</button><button type="button" data-digit="3">3</button>
+          <button type="button" data-digit="4">4</button><button type="button" data-digit="5">5</button><button type="button" data-digit="6">6</button>
+          <button type="button" data-digit="7">7</button><button type="button" data-digit="8">8</button><button type="button" data-digit="9">9</button>
+          <span aria-hidden="true" class="keypad-heart">&#9825;</span><button type="button" data-digit="0">0</button>
+          <button type="button" id="delete-digit" aria-label="Delete last digit">&#9003;</button>
+        </div>
+        <p id="code-error" class="error" role="status" aria-live="polite"></p>
+        <button type="submit" class="button button-primary">Unlock <span aria-hidden="true">&#8599;</span></button>
+      </form>
+    </div>
+    <p class="gate-footer">No peeking.</p>
+  </section>
+
+  <div id="experience" hidden>
+    <a class="skip-link" href="#memories">Skip to photos</a>
+    <header class="site-header">
+      <a href="#home" class="wordmark">For my RJ <span aria-hidden="true">&#9825;</span></a>
+      <div class="header-right">
+        <span class="made-for">FOR <span data-name>RITIKA</span></span>
+        <button id="sound-toggle" class="sound-button" aria-label="Play music" aria-pressed="false"><span aria-hidden="true">&#9835;</span><span id="sound-label">sound off</span></button>
+      </div>
+    </header>
+    <main>
+      <section id="home" class="hero" aria-labelledby="hero-title">
+        <div class="hero-orbit" aria-hidden="true"><span class="orbit-star">&#10022;</span></div>
+        <div class="balloons" aria-hidden="true"><i></i><i></i><i></i></div>
+        <span class="hero-sparkle" aria-hidden="true">&#10023;</span>
+        <p class="eyebrow"><span aria-hidden="true">&#10022;</span> <span id="occasion">17 NOVEMBER. YOUR DAY.</span> <span aria-hidden="true">&#10022;</span></p>
+        <p class="hero-intro" id="hero-intro">Happy birthday,</p>
+        <h1 id="hero-title"><span data-nickname>Ritu</span><span class="name-heart" aria-hidden="true">&#9825;</span></h1>
+        <div class="hero-pill"><span aria-hidden="true">&#9829;</span><time id="birthday-date" datetime="1998-11-17">17 NOVEMBER 1998</time><span aria-hidden="true">&#9829;</span></div>
+        <p class="hero-message" id="hero-message">A few favourite photos. A few things I wanted to say.<br>All for you.</p>
+        <a href="#memories" class="scroll-invitation" lang="hi-Latn">Neeche toh dekho <span aria-hidden="true">&#8595;</span></a>
+        <p class="hero-bottom-note">You're the cutest, a mulank 8 girl, can ever be. A little extra from the second best aka Pari :P</p>
+      </section>
+
+      <section id="memories" class="section memories-section" aria-labelledby="memories-title">
+        <div class="section-heading"><span class="section-number">01 / CAMERA ROLL</span><h2 id="memories-title">Press for <em>a memory.</em></h2><p>A very biased collection.</p></div>
+        <div class="memory-studio">
+          <div class="camera-area">
+            <button id="camera" class="camera" aria-label="Next memory">
+              <span class="camera-top" aria-hidden="true"></span>
+              <span class="camera-body" aria-hidden="true"><span class="camera-brand">our photos</span><span class="camera-flash"></span><span class="camera-lens"></span><span class="camera-stripe"></span><span class="camera-slot"></span></span>
+            </button>
+            <p class="hand-note">Click. Repeat. <span aria-hidden="true">&#10549;</span></p>
+            <p id="memory-count" class="small-status" role="status"></p>
+          </div>
+          <div id="memory-display" class="polaroid" aria-live="polite">
+            <div id="memory-art" class="memory-art" aria-hidden="true"><span class="art-sun"></span><span class="art-hill hill-back"></span><span class="art-hill hill-front"></span><span class="art-heart">&#9825;</span></div>
+            <img id="memory-photo" alt="" hidden>
+            <p id="memory-caption">A familiar face.</p>
+            <span class="polaroid-date" id="memory-detail"></span>
+          </div>
+        </div>
+        <h3 class="gallery-title">Us, <em>in pictures.</em></h3>
+        <p class="gallery-label">NO PARTICULAR ORDER. ALL FAVOURITES. <span aria-hidden="true">&#9825;</span></p>
+        <div id="photo-gallery" class="photo-gallery" aria-label="Photos of us"></div>
+      </section>
+
+      <section class="section cake-section" aria-labelledby="cake-title">
+        <div class="section-heading"><span class="section-number">02 / CAKE FIRST</span><h2 id="cake-title">Make <em>a wish.</em></h2><p>Birthday rules: you get the bigger slice.</p></div>
+        <div class="cake-card">
+          <div id="cake-scene" class="cake-scene" aria-hidden="true"><div class="cake-plate"></div><div class="cake-layer layer-bottom"></div><div class="cake-layer layer-top"></div><div class="cake-icing"></div><div class="cake-cherry"></div><div class="cake-candle"><span class="flame"></span></div><div class="cake-slice"></div><span class="cake-sparkle sparkle-left">&#10022;</span><span class="cake-sparkle sparkle-right">&#10023;</span></div>
+          <p id="cake-message" class="cake-message" role="status">Close your eyes. You know the drill.</p>
+          <div class="cake-actions"><button id="wish-button" class="button button-primary">Make a wish <span aria-hidden="true">&#10023;</span></button><button id="slice-button" class="button button-secondary" disabled>Cut the cake <span aria-hidden="true">&#9825;</span></button></div>
+        </div>
+      </section>
+
+      <section class="section letter-section" aria-labelledby="letter-title">
+        <div class="section-heading"><span class="section-number">03 / BETWEEN US</span><h2 id="letter-title">A note <em>for you.</em></h2><p>Couldn't fit this on a gift tag.</p></div>
+        <article class="letter">
+          <span class="letter-tape" aria-hidden="true"></span>
+          <div class="letter-top"><span>TO MY RJ</span><span aria-hidden="true">&#9825;</span></div>
+          <p class="letter-greeting"><span data-nickname>Ritu</span>,</p>
+          <div id="letter-body"></div>
+          <div class="letter-signoff"><p id="signoff"></p><span id="sender"></span><span class="letter-heart" aria-hidden="true">&#9829;</span></div>
+          <span class="letter-footnote">17 November. Happy birthday, Ritu.</span>
+        </article>
+      </section>
+
+      <section class="section wishes-section" aria-labelledby="wishes-title">
+        <div class="section-heading"><span class="section-number">04 / MY WISHLIST FOR YOU</span><h2 id="wishes-title">A few <em>wishes.</em></h2><p>For today, and the days after.</p></div>
+        <div id="wish-cards" class="wish-grid"></div>
+      </section>
+
+      <section id="our-song" class="section song-section" aria-labelledby="song-title">
+        <div class="record" aria-hidden="true"><div class="record-label">&#9825;</div></div>
+        <div class="song-copy"><span class="section-number">05 / ON REPEAT</span><h2 id="song-title">This one's <em>for you.</em></h2><p id="song-description">Some songs don't need an explanation.</p><button id="song-button" class="button button-secondary" aria-pressed="false">Play music <span aria-hidden="true">&#9835;</span></button><div id="spotify-player" hidden></div><p id="music-notice" class="music-notice" hidden>Press Play in the player. Internet access is required, and Spotify may need a sign-in for full playback. If the player doesn't load, use the direct link below.</p><a id="song-link" class="song-link" hidden target="_blank" rel="noopener noreferrer">Listen on Spotify <span aria-hidden="true">&#8599;</span></a></div>
+      </section>
+
+      <section class="finale" aria-labelledby="finale-title">
+        <span class="finale-star" aria-hidden="true">&#10023;</span>
+        <p class="eyebrow">ONE LAST THING</p>
+        <h2 id="finale-title">Love you, <em><span data-nickname>Ritu</span>.</em></h2>
+        <p id="closing-message">More birthdays, more photos, and you next to me. That's the plan.</p>
+        <button id="hug-button" class="button button-primary">A birthday hug <span aria-hidden="true">&#9825;</span></button>
+        <p id="hug-message" class="hug-message" role="status" aria-live="polite"></p>
+        <p class="finale-signature">For my RJ.</p>
+      </section>
+    </main>
+    <footer class="site-footer"><span>HAPPY BIRTHDAY, RJ.</span><button id="lock-button">Lock it again <span aria-hidden="true">&#9825;</span></button><a href="#home">Back to top &#8593;</a></footer>
+  </div>
+  <dialog id="photo-dialog" class="photo-dialog" aria-labelledby="dialog-caption">
+    <button id="close-photo" class="dialog-close" aria-label="Close photo">&times;</button>
+    <div id="dialog-visual"></div>
+    <h2 id="dialog-caption"></h2>
+    <p id="dialog-detail"></p>
+    <div class="dialog-navigation"><button id="previous-photo" class="button button-secondary" aria-label="Previous photo">&#8592; Previous</button><span id="dialog-count" role="status"></span><button id="next-photo" class="button button-secondary" aria-label="Next photo">Next &#8594;</button></div>
+  </dialog>
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+  <p id="app-error" class="app-error" role="alert" hidden></p>
+</body>
+</html>
