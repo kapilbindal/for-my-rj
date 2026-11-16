@@ -34,6 +34,25 @@
   const codeInput = document.getElementById("secret-code");
   const codeError = document.getElementById("code-error");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const effectsControls = document.querySelectorAll("[data-effects-toggle]");
+  let effectsPaused = false;
+  let effectsEnabled = !reducedMotion.matches;
+  function syncEffects() {
+    effectsEnabled = !effectsPaused && !reducedMotion.matches;
+    document.body.classList.toggle("effects-paused", !effectsEnabled);
+    for (const control of effectsControls) {
+      control.disabled = reducedMotion.matches;
+      control.setAttribute("aria-pressed", String(effectsEnabled));
+      control.querySelector(".effects-label").textContent = reducedMotion.matches ? "Reduced motion" : effectsEnabled ? "Pause effects" : "Resume effects";
+    }
+    if (!effectsEnabled) document.querySelectorAll(".confetti").forEach(container => container.replaceChildren());
+  }
+  effectsControls.forEach(control => control.addEventListener("click", () => {
+    effectsPaused = !effectsPaused;
+    syncEffects();
+  }));
+  reducedMotion.addEventListener("change", syncEffects);
+  syncEffects();
   const soundToggle = document.getElementById("sound-toggle");
   const songButton = document.getElementById("song-button");
   const spotifyPlayer = document.getElementById("spotify-player");
@@ -81,20 +100,48 @@
     }
   }
 
-  function celebrate(count = 30) {
-    if (reducedMotion.matches) return;
-    const container = document.getElementById("confetti");
-    container.replaceChildren();
-    const colours = ["#7ba8ca", "#d397ab", "#b8a078", "#a4bfaf"];
+  let celebrationIndex = 0;
+  function celebrate(count = 88, origin) {
+    if (!effectsEnabled) return;
+    const container = document.getElementById(photoDialog.open ? "dialog-confetti" : "confetti");
+    const x = Math.max(16, Math.min(window.innerWidth - 16, origin?.x ?? window.innerWidth / 2));
+    const y = Math.max(24, Math.min(window.innerHeight - 24, origin?.y ?? window.innerHeight * 0.4));
+    const colours = ["#9b37d1", "#ee4b99", "#ffbf2f", "#7d4be6", "#40b8a4", "#ff7b5c"];
+    celebrationIndex++;
+    while (container.childElementCount + count > 160 && container.firstElementChild) container.firstElementChild.remove();
     for (let index = 0; index < count; index++) {
-      const piece = document.createElement("span");
-      piece.textContent = index % 3 ? "\u2665" : "\u2727";
-      piece.style.setProperty("--left", `${Math.random() * 100}%`);
-      piece.style.setProperty("--duration", `${3 + Math.random() * 3}s`);
-      piece.style.setProperty("--size", `${10 + Math.random() * 12}px`);
-      piece.style.setProperty("--sway", `${Math.random() * 120 - 60}px`);
-      piece.style.setProperty("--color", colours[index % colours.length]);
+      const shape = (index + celebrationIndex) % 7;
+      let piece;
+      if (shape === 0) {
+        piece = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        piece.setAttribute("viewBox", "0 0 100 80");
+        piece.setAttribute("class", "particle particle-butterfly");
+        const art = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        art.setAttribute("href", "#butterfly-art");
+        piece.append(art);
+      } else {
+        piece = document.createElement("span");
+        piece.className = shape > 3 ? "particle particle-ribbon" : "particle";
+        piece.textContent = shape > 3 ? "" : shape === 3 ? "\u2665" : "\u2726";
+      }
+      const angle = Math.PI + Math.random() * Math.PI;
+      const distance = 55 + Math.random() * (count > 50 ? 240 : 130);
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
+      piece.style.setProperty("--x", `${x}px`);
+      piece.style.setProperty("--y", `${y}px`);
+      piece.style.setProperty("--mid-x", `${dx * 0.7}px`);
+      piece.style.setProperty("--mid-y", `${dy}px`);
+      piece.style.setProperty("--end-x", `${dx * 1.3}px`);
+      piece.style.setProperty("--end-y", `${dy + 150 + Math.random() * 100}px`);
+      piece.style.setProperty("--duration", `${1.3 + Math.random()}s`);
+      piece.style.setProperty("--size", `${shape === 0 ? 20 + Math.random() * 12 : 9 + Math.random() * 12}px`);
+      piece.style.setProperty("--spin", `${Math.random() * 180 - 90}deg`);
+      piece.style.setProperty("--end-spin", `${Math.random() * 400 - 200}deg`);
+      piece.style.setProperty("--color", colours[(index + celebrationIndex) % colours.length]);
+      piece.style.animationDelay = `${index % 5 * 20}ms`;
       piece.addEventListener("animationend", () => piece.remove(), { once: true });
+      piece.addEventListener("animationcancel", () => piece.remove(), { once: true });
       container.append(piece);
     }
   }
@@ -146,7 +193,7 @@
   const caption = document.getElementById("memory-caption");
   const detail = document.getElementById("memory-detail");
   const memoryCount = document.getElementById("memory-count");
-  const palettes = [["#c2d9e7", "#efd8d7"], ["#cddccf", "#f0e2bd"], ["#d9d3e8", "#ecc8d1"], ["#bbd6e4", "#f4d5b3"]];
+  const palettes = [["#d6b9f1", "#f7d8ec"], ["#e6c6fb", "#f4dbbb"], ["#c9b8ec", "#f1c0de"], ["#d6c1f3", "#f8dbbd"]];
   memoryCount.textContent = `${config.memories.length} photos. All favourites.`;
   photo.addEventListener("error", () => {
     photo.hidden = true;
@@ -230,6 +277,7 @@
     } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
       showGalleryMemory(galleryIndex + (event.key === "ArrowRight" ? 1 : -1));
+      celebrate(24);
     }
   });
   photoDialog.addEventListener("click", event => {
@@ -241,28 +289,91 @@
   const sliceButton = document.getElementById("slice-button");
   const cakeScene = document.getElementById("cake-scene");
   const cakeMessage = document.getElementById("cake-message");
+  const cakeInstructions = document.getElementById("cake-instructions");
+  const wishRitual = document.getElementById("wish-ritual");
+  let cakeDrag = null;
+  function pointAt(element) {
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }
+  function cutCake(origin) {
+    if (cakeScene.classList.contains("sliced")) return;
+    cakeScene.classList.add("sliced", "wished");
+    cakeScene.setAttribute("aria-disabled", "true");
+    cakeMessage.textContent = "The bigger slice is yours. Birthday rules.";
+    cakeInstructions.textContent = "Another slice? Reset the cake below.";
+    sliceButton.textContent = "Reset the cake \u21ba";
+    celebrate(110, origin ?? pointAt(cakeScene));
+  }
+  function endCakeDrag(event, cancelled = false) {
+    if (!cakeDrag || cakeDrag.id !== event.pointerId) return;
+    const drag = cakeDrag;
+    cakeDrag = null;
+    cakeScene.classList.remove("dragging");
+    cakeScene.style.removeProperty("--knife-x");
+    cakeScene.style.removeProperty("--knife-y");
+    if (cakeScene.hasPointerCapture(event.pointerId)) cakeScene.releasePointerCapture(event.pointerId);
+    if (cancelled) return;
+    const dx = event.clientX - drag.x;
+    const dy = event.clientY - drag.y;
+    const endY = (event.clientY - drag.box.top) / drag.box.height;
+    const crossesMiddle = (drag.x - (drag.box.left + drag.box.width / 2)) * (event.clientX - (drag.box.left + drag.box.width / 2)) <= 0;
+    if (Math.abs(dx) >= drag.box.width * 0.42 && Math.abs(dx) > Math.abs(dy) * 1.3 && crossesMiddle && endY >= 0.28 && endY <= 0.88) {
+      cutCake({ x: event.clientX, y: event.clientY });
+    } else if (drag.horizontal) {
+      cakeMessage.textContent = "A little further across the cake.";
+    }
+  }
+  cakeScene.addEventListener("pointerdown", event => {
+    if (!event.isPrimary || event.button !== 0 || cakeScene.classList.contains("sliced")) return;
+    const box = cakeScene.getBoundingClientRect();
+    const startY = (event.clientY - box.top) / box.height;
+    const startX = (event.clientX - box.left) / box.width;
+    if (startY < 0.28 || startY > 0.88 || startX < 0.08 || startX > 0.92) return;
+    cakeDrag = { id: event.pointerId, x: event.clientX, y: event.clientY, box, horizontal: false };
+    cakeScene.setPointerCapture(event.pointerId);
+    cakeScene.focus({ preventScroll: true });
+  });
+  cakeScene.addEventListener("pointermove", event => {
+    if (!cakeDrag || cakeDrag.id !== event.pointerId) return;
+    const dx = event.clientX - cakeDrag.x;
+    const dy = event.clientY - cakeDrag.y;
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.3) cakeDrag.horizontal = true;
+    if (!cakeDrag.horizontal) return;
+    event.preventDefault();
+    cakeScene.classList.add("dragging");
+    cakeScene.style.setProperty("--knife-x", `${Math.max(8, Math.min(92, (event.clientX - cakeDrag.box.left) / cakeDrag.box.width * 100))}%`);
+    cakeScene.style.setProperty("--knife-y", `${Math.max(18, Math.min(88, (event.clientY - cakeDrag.box.top) / cakeDrag.box.height * 100))}%`);
+  });
+  cakeScene.addEventListener("pointerup", event => endCakeDrag(event));
+  cakeScene.addEventListener("pointercancel", event => endCakeDrag(event, true));
+  cakeScene.addEventListener("lostpointercapture", event => endCakeDrag(event, true));
+  cakeScene.addEventListener("keydown", event => {
+    if ((event.key === "Enter" || event.key === " ") && !event.repeat) {
+      event.preventDefault();
+      cutCake(pointAt(cakeScene));
+    }
+  });
   wishButton.addEventListener("click", () => {
-    cakeScene.classList.add("wished");
-    cakeMessage.textContent = "Wish made. Cake next?";
-    wishButton.textContent = "Wish made \u2713";
-    sliceButton.disabled = false;
-    sliceButton.focus({ preventScroll: true });
-    wishButton.disabled = true;
-    celebrate(22);
+    const blown = !wishRitual.classList.contains("blown");
+    wishRitual.classList.toggle("blown", blown);
+    wishButton.setAttribute("aria-pressed", String(blown));
+    wishButton.setAttribute("aria-label", blown ? "Relight the candle" : "Blow out the candle");
+    document.getElementById("candle-hint").textContent = blown ? "Tap to relight." : "Tap the candle when you're ready.";
+    document.getElementById("wish-message").textContent = blown ? "Wish made. Your secret's safe." : "Ready for another wish.";
+    celebrate(blown ? 110 : 28, pointAt(wishButton));
   });
   sliceButton.addEventListener("click", () => {
     if (!cakeScene.classList.contains("sliced")) {
-      cakeScene.classList.add("sliced");
-      cakeMessage.textContent = "The bigger slice is yours. Birthday rules.";
-      sliceButton.textContent = "One more wish? \u2727";
+      cutCake(pointAt(cakeScene));
     } else {
       cakeScene.classList.remove("wished", "sliced");
-      cakeMessage.textContent = "Close your eyes. You know the drill.";
-      wishButton.disabled = false;
-      wishButton.textContent = "Make a wish \u2727";
-      wishButton.focus({ preventScroll: true });
-      sliceButton.disabled = true;
+      cakeScene.setAttribute("aria-disabled", "false");
+      cakeMessage.textContent = "The first slice is yours.";
+      cakeInstructions.textContent = "Drag across the cake to slice it. Or press Enter.";
       sliceButton.textContent = "Cut the cake \u2661";
+      cakeScene.focus({ preventScroll: true });
+      celebrate(24, pointAt(cakeScene));
     }
   });
 
@@ -417,7 +528,7 @@
 
   document.getElementById("hug-button").addEventListener("click", () => {
     document.getElementById("hug-message").textContent = `A proper one when I see you, ${config.nickname}. \u2661`;
-    celebrate(45);
+    celebrate(110, pointAt(document.getElementById("hug-button")));
   });
   document.getElementById("lock-button").addEventListener("click", () => {
     stopMusic();
@@ -425,8 +536,23 @@
     gate.hidden = false;
     codeInput.value = "";
     clearCodeError();
-    document.getElementById("confetti").replaceChildren();
+    document.querySelectorAll(".confetti").forEach(container => container.replaceChildren());
     window.scrollTo({ top: 0, behavior: "instant" });
     codeInput.focus({ preventScroll: true });
+  });
+  document.addEventListener("click", event => {
+    if (!(event.target instanceof Element) || event.target.closest("[data-effects-toggle], #wish-button, #slice-button, #hug-button")) return;
+    if (window.getSelection()?.isCollapsed === false) return;
+    const target = event.target.closest("button, a, .letter, .polaroid");
+    if (target?.disabled) return;
+    const origin = event.detail > 0 ? { x: event.clientX, y: event.clientY } : target ? pointAt(target) : undefined;
+    const count = event.target.closest("[data-digit], #delete-digit, #secret-code") ? 10 : event.target.closest("#camera, .gallery-photo, .wish-card") ? 34 : 18;
+    celebrate(count, origin);
+    if (target && effectsEnabled) {
+      target.classList.remove("click-glow");
+      void target.offsetWidth;
+      target.classList.add("click-glow");
+      target.addEventListener("animationend", () => target.classList.remove("click-glow"), { once: true });
+    }
   });
 })();

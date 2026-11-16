@@ -16,6 +16,19 @@ their original wording. The branding is "For my RJ". The entrance has only
 the date riddle, with no separate code hint. The code remains 1711.
 You can change "Your future husband" to your name.
 
+CELEBRATIONS
+The lavender theme uses original butterfly and cake artwork. Each click
+adds a short burst of butterflies, stars, hearts or bright confetti.
+Photo-viewer celebrations render inside its dialog, without covering controls.
+"Pause effects" stops decorative motion; system reduced-motion preferences
+disable animated effects automatically. No sound effects or microphone are used.
+The cake can be sliced by dragging horizontally across its middle in either
+direction. A short drag, vertical scroll or cancelled gesture does not cut it.
+Press Enter/Space on the cake, or use "Cut the cake", as a keyboard alternative.
+The separate "Make a wish" candle goes out with a tap, showing a smoke trail
+and butterfly celebration. Tap again to relight it. Cutting and wishing are
+independent, and the existing letter, photos, captions and music are unchanged.
+
 PHOTOS
 The eight Card photos are copied into photos/memories for the camera.
 The nine usss photos are copied into photos/us for the couple gallery.
@@ -69,6 +82,6 @@ The GitHub repository and published site are public. Only include photos and
 personal details that you are comfortable making publicly accessible.
 
 DESIGN
-A standalone, original sky-blue romantic keepsake inspired by the interaction
+A standalone, original lavender butterfly keepsake inspired by the interaction
 ideas in the example you shared. No example-site source, photos, stickers,
 personal letter, or copyrighted music has been copied.
