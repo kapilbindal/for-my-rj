@@ -9,15 +9,15 @@
   }
 
   const config = window.SURPRISE;
-  const requiredText = ["name", "nickname", "birthDate", "sender", "secretCode", "occasion", "heroIntro", "heroMessage", "signoff", "closingMessage"];
+  const requiredText = ["name", "nickname", "birthDate", "sender", "secretCode", "occasion", "heroIntro", "heroMessage", "letterGreeting", "signoff", "closingMessage"];
   function isPhotoCollection(collection) {
     return Array.isArray(collection) && collection.length > 0 &&
       collection.every(memory => memory && ["src", "caption", "detail", "alt"].every(key => typeof memory[key] === "string"));
   }
   if (!config || requiredText.some(key => typeof config[key] !== "string" || !config[key].trim()) ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(config.birthDate) ||
-      !Number.isFinite(Date.parse(`${config.birthDate}T00:00:00Z`)) ||
-      new Date(`${config.birthDate}T00:00:00Z`).toISOString().slice(0, 10) !== config.birthDate ||
+      !/^\d{2}-\d{2}$/.test(config.birthDate) ||
+      !Number.isFinite(Date.parse(`2000-${config.birthDate}T00:00:00Z`)) ||
+      new Date(`2000-${config.birthDate}T00:00:00Z`).toISOString().slice(5, 10) !== config.birthDate ||
       !/^[0-9]{4}$/.test(config.secretCode) || !Array.isArray(config.letter) || !config.letter.length ||
       config.letter.some(text => typeof text !== "string") ||
       !isPhotoCollection(config.memories) || !isPhotoCollection(config.gallery) ||
@@ -63,17 +63,25 @@
   document.querySelector('meta[name="description"]').content = `For my RJ. Happy birthday, ${config.nickname}.`;
   const birthday = document.getElementById("birthday-date");
   birthday.dateTime = config.birthDate;
-  birthday.textContent = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
-    .format(new Date(`${config.birthDate}T00:00:00Z`)).toUpperCase();
+  birthday.textContent = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", timeZone: "UTC" })
+    .format(new Date(`2000-${config.birthDate}T00:00:00Z`)).toUpperCase();
   const textFields = {
     occasion: config.occasion, "hero-intro": config.heroIntro,
-    "hero-message": config.heroMessage, signoff: config.signoff, sender: config.sender,
+    "hero-message": config.heroMessage, "letter-greeting": config.letterGreeting, signoff: config.signoff, sender: config.sender,
     "closing-message": config.closingMessage
   };
   for (const [id, text] of Object.entries(textFields)) document.getElementById(id).textContent = text;
   for (const paragraph of config.letter) {
     const element = document.createElement("p");
-    element.textContent = paragraph;
+    for (const part of paragraph.split(/(\*[^*\n]+\*)/g)) {
+      if (/^\*[^*\n]+\*$/.test(part)) {
+        const emphasis = document.createElement("em");
+        emphasis.textContent = part.slice(1, -1);
+        element.append(emphasis);
+      } else {
+        element.append(document.createTextNode(part));
+      }
+    }
     document.getElementById("letter-body").append(element);
   }
   if (config.songDescription) document.getElementById("song-description").textContent = config.songDescription;

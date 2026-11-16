@@ -4,20 +4,21 @@
 window.SURPRISE = {
   name: "Ritika",
   nickname: "Ritu",
-  birthDate: "1998-11-17",
-  sender: "Your future husband",
+  birthDate: "11-17",
+  sender: "You future husband",
   secretCode: "1711",
   occasion: "17 NOVEMBER. YOUR DAY.",
   heroIntro: "Happy birthday,",
   heroMessage: "A few favourite photos. A few things I wanted to say.\nAll for you.",
+  letterGreeting: "Happy Birthday, my lavender girl! \uD83D\uDC9C",
   letter: [
-    "Happy birthday, Ritu. I wanted to do a little more than send you a birthday message. So, here are some of my favourite photos of you, and a few of us that had to make the cut.",
-    "There's my chef, my superwoman, and, of course, Sushi Paglu. I couldn't pick one favourite. You can probably tell.",
-    "I keep coming back to 'When It All Started'. That was us then. Now we're getting married. I really like where this is going.",
-    "I hope this year brings you the things you've been working for, plenty of laughter, and all the cake and sushi you want. I'll be around for all of it. Especially the food.",
-    "I love you, Ritu. Can't wait to call you my wife."
+    "I am pretty bad at writing these things, so you\u2019ll have to bear with me here :P",
+    "Thank you for existing, and for making my life so much more happening, joyful and, in so many ways, better. You bring a certain calm to my life, give me a million little reasons to smile, and make even the most ordinary moments worth cherishing.",
+    "I hope you know what a strong woman you are. So hardworking, so smart (although yes madam, there are times when your naivety gets the better of you, and some clever people manage to fool you xD). But that's you, and I absolutely love that about you too.",
+    "I am so, so in love with this deeply sensitive, caring, kind-hearted and prettiest girl. And honestly, I can't wait for you to officially become *my woman* soon. \u2764\uFE0F",
+    "Happy Birthday once again, baby doll! Wishing you all the happiness, success and everything your heart wishes for. I'll always be rooting for you, cheering for you and standing right beside you. \u2764\uFE0F"
   ],
-  signoff: "Love you,",
+  signoff: "Love you",
   closingMessage: "More birthdays, more photos, and you next to me. That's the plan.",
 
   // Camera photos from Card; captions preserve the original filename wording.

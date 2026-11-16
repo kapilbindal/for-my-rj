@@ -4,7 +4,7 @@ RITU'S BIRTHDAY SURPRISE
 OPEN IT
 Double-click index.html in this folder. No installation, account, or build
 step is required. The entrance code is 1711 (17 November).
-The birthday is 17 November 1998. Her full name is Ritika; her nickname is Ritu.
+The birthday is 17 November. Her full name is Ritika; her nickname is Ritu.
 The photos and interactions work offline. Spotify needs internet access.
 
 PERSONALIZE IT
@@ -14,7 +14,10 @@ The headings, letter, wishes, buttons and messages use conversational English.
 Only the user's exact personal lines, photo captions and song title retain
 their original wording. The branding is "For my RJ". The entrance has only
 the date riddle, with no separate code hint. The code remains 1711.
-You can change "Your future husband" to your name.
+The note uses the user's supplied wording, emojis and sign-off. Edit
+letterGreeting, letter, signoff and sender in config.js to change it.
+Wrap a phrase in single asterisks for italics, such as *my woman*.
+birthDate stores only month and day in MM-DD format; no birth year is needed.
 
 CELEBRATIONS
 The lavender theme uses original butterfly and cake artwork. Each click
