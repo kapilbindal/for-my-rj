@@ -20,10 +20,10 @@ Wrap a phrase in single asterisks for italics, such as *my woman*.
 heroTagline controls the badge below Ritu; it currently reads "One degree hotter".
 
 CELEBRATIONS
-The lavender theme uses original butterfly and cake artwork. Small celebrations
-are reserved for the final memory reveal, the completed cake cut and blowing
-out the candle. Ordinary clicks, keypad presses, photo navigation and card
-opening do not trigger confetti.
+The lavender theme uses original butterfly and cake artwork. Large celebrations
+happen after a correct PIN unlock, on the hug button, and after the cake cut.
+The final memory reveal and candle blow keep their smaller bursts.
+Ordinary clicks, keypad presses, photo navigation and card opening stay quiet.
 "Pause effects" stops decorative motion; system reduced-motion preferences
 disable animated effects automatically. No sound effects or microphone are used.
 The unlettered cake uses a horizontal knife track. Drag from near one edge

@@ -190,6 +190,7 @@
     const heading = document.getElementById("hero-title");
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
+    celebrate(110);
   });
 
   let memoryIndex = 0;
@@ -309,7 +310,7 @@
     cakeMessage.textContent = "The bigger slice is yours. Birthday rules.";
     cakeInstructions.textContent = "A slice for you. One for me.";
     if (moveFocus) cakeMessage.focus({ preventScroll: true });
-    celebrate(32, celebrationOrigin);
+    celebrate(110, celebrationOrigin);
   }
   function endCakeDrag(event, cancelled = false) {
     if (!cakeDrag || cakeDrag.id !== event.pointerId) return;
@@ -670,6 +671,7 @@
 
   document.getElementById("hug-button").addEventListener("click", () => {
     document.getElementById("hug-message").textContent = `A proper one when I see you, ${config.nickname}. \u2661`;
+    celebrate(110, pointAt(document.getElementById("hug-button")));
   });
   document.getElementById("lock-button").addEventListener("click", () => {
     stopMusic();
