@@ -9,15 +9,12 @@
   }
 
   const config = window.SURPRISE;
-  const requiredText = ["name", "nickname", "birthDate", "sender", "secretCode", "occasion", "heroIntro", "heroMessage", "letterGreeting", "signoff", "closingMessage"];
+  const requiredText = ["name", "nickname", "sender", "secretCode", "occasion", "heroIntro", "heroTagline", "heroMessage", "letterGreeting", "signoff", "closingMessage"];
   function isPhotoCollection(collection) {
     return Array.isArray(collection) && collection.length > 0 &&
       collection.every(memory => memory && ["src", "caption", "detail", "alt"].every(key => typeof memory[key] === "string"));
   }
   if (!config || requiredText.some(key => typeof config[key] !== "string" || !config[key].trim()) ||
-      !/^\d{2}-\d{2}$/.test(config.birthDate) ||
-      !Number.isFinite(Date.parse(`2000-${config.birthDate}T00:00:00Z`)) ||
-      new Date(`2000-${config.birthDate}T00:00:00Z`).toISOString().slice(5, 10) !== config.birthDate ||
       !/^[0-9]{4}$/.test(config.secretCode) || !Array.isArray(config.letter) || !config.letter.length ||
       config.letter.some(text => typeof text !== "string") ||
       !isPhotoCollection(config.memories) || !isPhotoCollection(config.gallery) ||
@@ -56,17 +53,19 @@
   const soundToggle = document.getElementById("sound-toggle");
   const songButton = document.getElementById("song-button");
   const spotifyPlayer = document.getElementById("spotify-player");
-  let spotifyEmbedUrl = "";
+  const musicStatus = document.getElementById("music-status");
+  const spotify = {
+    uri: "", apiPromise: null, controller: null, ready: false, loading: false,
+    generation: 0, readyTimer: null, actionTimer: null, action: null,
+    position: 0, error: ""
+  };
   document.querySelectorAll("[data-name]").forEach(element => { element.textContent = config.name; });
   document.querySelectorAll("[data-nickname]").forEach(element => { element.textContent = config.nickname; });
   document.title = `Happy birthday, ${config.nickname}`;
   document.querySelector('meta[name="description"]').content = `For my RJ. Happy birthday, ${config.nickname}.`;
-  const birthday = document.getElementById("birthday-date");
-  birthday.dateTime = config.birthDate;
-  birthday.textContent = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", timeZone: "UTC" })
-    .format(new Date(`2000-${config.birthDate}T00:00:00Z`)).toUpperCase();
   const textFields = {
     occasion: config.occasion, "hero-intro": config.heroIntro,
+    "hero-tagline": config.heroTagline,
     "hero-message": config.heroMessage, "letter-greeting": config.letterGreeting, signoff: config.signoff, sender: config.sender,
     "closing-message": config.closingMessage
   };
@@ -95,10 +94,9 @@
       link.hidden = false;
       const spotifyPath = url.pathname.match(/^\/(track|album)\/([a-zA-Z0-9]{22})\/?$/);
       if (url.hostname === "open.spotify.com" && spotifyPath && !config.audioFile) {
-        spotifyEmbedUrl = `https://open.spotify.com/embed/${spotifyPath[1]}/${spotifyPath[2]}`;
+        spotify.uri = `spotify:${spotifyPath[1]}:${spotifyPath[2]}`;
         document.getElementById("sound-label").textContent = "our song";
-        soundToggle.setAttribute("aria-label", `Jump to ${config.songTitle || "our song"} player`);
-        soundToggle.removeAttribute("aria-pressed");
+        soundToggle.setAttribute("aria-label", `Play ${config.songTitle || "our song"}`);
         soundToggle.setAttribute("aria-controls", "spotify-player");
         songButton.hidden = true;
         document.getElementById("music-notice").hidden = false;
@@ -109,9 +107,9 @@
   }
 
   let celebrationIndex = 0;
-  function celebrate(count = 88, origin) {
+  function celebrate(count = 24, origin) {
     if (!effectsEnabled) return;
-    const container = document.getElementById(photoDialog.open ? "dialog-confetti" : "confetti");
+    const container = document.getElementById("confetti");
     const x = Math.max(16, Math.min(window.innerWidth - 16, origin?.x ?? window.innerWidth / 2));
     const y = Math.max(24, Math.min(window.innerHeight - 24, origin?.y ?? window.innerHeight * 0.4));
     const colours = ["#9b37d1", "#ee4b99", "#ffbf2f", "#7d4be6", "#40b8a4", "#ff7b5c"];
@@ -187,54 +185,48 @@
     }
     gate.hidden = true;
     experience.hidden = false;
-    if (spotifyEmbedUrl) showSpotifyPlayer();
+    if (spotify.uri) showSpotifyPlayer();
     window.scrollTo({ top: 0, behavior: "instant" });
     const heading = document.getElementById("hero-title");
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
-    celebrate();
   });
 
   let memoryIndex = 0;
-  const photo = document.getElementById("memory-photo");
-  const art = document.getElementById("memory-art");
-  const caption = document.getElementById("memory-caption");
-  const detail = document.getElementById("memory-detail");
+  const camera = document.getElementById("camera");
+  const memoryReveals = document.getElementById("memory-reveals");
+  const memoryArt = document.getElementById("memory-art-template");
   const memoryCount = document.getElementById("memory-count");
   const palettes = [["#d6b9f1", "#f7d8ec"], ["#e6c6fb", "#f4dbbb"], ["#c9b8ec", "#f1c0de"], ["#d6c1f3", "#f8dbbd"]];
-  memoryCount.textContent = `${config.memories.length} photos. All favourites.`;
-  photo.addEventListener("error", () => {
-    photo.hidden = true;
-    art.hidden = false;
-    reportError("This photo couldn't load. Check its filename in config.js and include the photos folder when sharing.", new Error(`Missing memory image: ${photo.getAttribute("src")}`));
-  });
-  document.getElementById("camera").addEventListener("click", () => {
-    const index = memoryIndex % config.memories.length;
+  memoryCount.textContent = `${config.memories.length} memories left`;
+  camera.addEventListener("click", () => {
+    if (memoryIndex >= config.memories.length) return;
+    const index = memoryIndex;
     const memory = config.memories[index];
+    const figure = document.createElement("figure");
+    figure.className = "polaroid memory-keepsake";
+    figure.style.setProperty("--tilt", `${index % 2 ? 2 : -2}deg`);
+    const caption = document.createElement("figcaption");
     caption.textContent = memory.caption;
-    detail.textContent = memory.detail;
-    photo.hidden = !memory.src;
-    art.hidden = Boolean(memory.src);
-    if (memory.src) {
-      photo.alt = memory.alt;
-      photo.src = memory.src;
-    } else {
-      photo.removeAttribute("src");
-      const palette = palettes[index % palettes.length];
-      art.style.background = `linear-gradient(${palette[0]}, ${palette[1]})`;
-    }
-    const display = document.getElementById("memory-display");
-    display.classList.remove("developing");
-    void display.offsetWidth;
-    display.classList.add("developing");
+    figure.append(createMemoryVisual(memory, index), caption);
+    memoryReveals.hidden = false;
+    memoryReveals.append(figure);
     memoryIndex++;
-    memoryCount.textContent = `${index + 1} / ${config.memories.length}`;
+    const remaining = config.memories.length - memoryIndex;
+    if (remaining === 0) {
+      camera.disabled = true;
+      camera.setAttribute("aria-label", "Every memory revealed");
+      document.getElementById("memory-instruction").textContent = "All revealed.";
+      memoryCount.textContent = "Every memory revealed \u2726";
+      celebrate(20, pointAt(camera));
+    } else {
+      camera.setAttribute("aria-label", `Reveal memory ${memoryIndex + 1} of ${config.memories.length}`);
+      memoryCount.textContent = `${remaining} ${remaining === 1 ? "memory" : "memories"} left`;
+    }
   });
 
   function createMemoryArt(index) {
-    const artwork = art.cloneNode(true);
-    artwork.removeAttribute("id");
-    artwork.hidden = false;
+    const artwork = memoryArt.content.firstElementChild.cloneNode(true);
     const palette = palettes[index % palettes.length];
     artwork.style.background = `linear-gradient(${palette[0]}, ${palette[1]})`;
     return artwork;
@@ -245,7 +237,7 @@
     image.alt = memory.alt;
     image.addEventListener("error", () => {
       image.replaceWith(createMemoryArt(index));
-      reportError("This gallery photo couldn't load. Check its filename in config.js and include the photos folder when sharing.", new Error(`Missing gallery image: ${memory.src}`));
+      reportError("This photo couldn't load. Check its filename in config.js and include the photos folder when sharing.", new Error(`Missing photo: ${memory.src}`));
     }, { once: true });
     image.src = memory.src;
     return image;
@@ -285,7 +277,6 @@
     } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
       showGalleryMemory(galleryIndex + (event.key === "ArrowRight" ? 1 : -1));
-      celebrate(24);
     }
   });
   photoDialog.addEventListener("click", event => {
@@ -296,6 +287,7 @@
   const wishButton = document.getElementById("wish-button");
   const sliceButton = document.getElementById("slice-button");
   const cakeScene = document.getElementById("cake-scene");
+  const cakeServed = document.getElementById("cake-served");
   const cakeMessage = document.getElementById("cake-message");
   const cakeInstructions = document.getElementById("cake-instructions");
   const wishRitual = document.getElementById("wish-ritual");
@@ -306,30 +298,36 @@
   }
   function cutCake(origin) {
     if (cakeScene.classList.contains("sliced")) return;
+    const celebrationOrigin = origin ?? pointAt(cakeScene);
+    const moveFocus = document.activeElement === cakeScene || document.activeElement === sliceButton;
     cakeScene.classList.add("sliced", "wished");
     cakeScene.setAttribute("aria-disabled", "true");
+    cakeScene.hidden = true;
+    cakeServed.hidden = false;
+    sliceButton.disabled = true;
+    sliceButton.hidden = true;
     cakeMessage.textContent = "The bigger slice is yours. Birthday rules.";
-    cakeInstructions.textContent = "Another slice? Reset the cake below.";
-    sliceButton.textContent = "Reset the cake \u21ba";
-    celebrate(110, origin ?? pointAt(cakeScene));
+    cakeInstructions.textContent = "A slice for you. One for me.";
+    if (moveFocus) cakeMessage.focus({ preventScroll: true });
+    celebrate(32, celebrationOrigin);
   }
   function endCakeDrag(event, cancelled = false) {
     if (!cakeDrag || cakeDrag.id !== event.pointerId) return;
     const drag = cakeDrag;
     cakeDrag = null;
-    cakeScene.classList.remove("dragging");
+    cakeScene.classList.remove("dragging", "reverse");
     cakeScene.style.removeProperty("--knife-x");
-    cakeScene.style.removeProperty("--knife-y");
+    cakeScene.style.removeProperty("--cut-progress");
     if (cakeScene.hasPointerCapture(event.pointerId)) cakeScene.releasePointerCapture(event.pointerId);
     if (cancelled) return;
     const dx = event.clientX - drag.x;
     const dy = event.clientY - drag.y;
-    const endY = (event.clientY - drag.box.top) / drag.box.height;
-    const crossesMiddle = (drag.x - (drag.box.left + drag.box.width / 2)) * (event.clientX - (drag.box.left + drag.box.width / 2)) <= 0;
-    if (Math.abs(dx) >= drag.box.width * 0.42 && Math.abs(dx) > Math.abs(dy) * 1.3 && crossesMiddle && endY >= 0.28 && endY <= 0.88) {
+    const endX = (event.clientX - drag.box.left) / drag.box.width;
+    const fullSweep = (drag.startX <= 0.3 && endX >= 0.8 && dx > 0) || (drag.startX >= 0.7 && endX <= 0.2 && dx < 0);
+    if (fullSweep && Math.abs(dx) >= drag.box.width * 0.5 && Math.abs(dx) > Math.abs(dy) * 1.3) {
       cutCake({ x: event.clientX, y: event.clientY });
     } else if (drag.horizontal) {
-      cakeMessage.textContent = "A little further across the cake.";
+      cakeMessage.textContent = "Start near one edge and drag all the way across.";
     }
   }
   cakeScene.addEventListener("pointerdown", event => {
@@ -338,7 +336,8 @@
     const startY = (event.clientY - box.top) / box.height;
     const startX = (event.clientX - box.left) / box.width;
     if (startY < 0.28 || startY > 0.88 || startX < 0.08 || startX > 0.92) return;
-    cakeDrag = { id: event.pointerId, x: event.clientX, y: event.clientY, box, horizontal: false };
+    cakeDrag = { id: event.pointerId, x: event.clientX, y: event.clientY, startX, box, horizontal: false };
+    cakeScene.classList.toggle("reverse", startX > 0.5);
     cakeScene.setPointerCapture(event.pointerId);
     cakeScene.focus({ preventScroll: true });
   });
@@ -350,8 +349,10 @@
     if (!cakeDrag.horizontal) return;
     event.preventDefault();
     cakeScene.classList.add("dragging");
-    cakeScene.style.setProperty("--knife-x", `${Math.max(8, Math.min(92, (event.clientX - cakeDrag.box.left) / cakeDrag.box.width * 100))}%`);
-    cakeScene.style.setProperty("--knife-y", `${Math.max(18, Math.min(88, (event.clientY - cakeDrag.box.top) / cakeDrag.box.height * 100))}%`);
+    const position = (event.clientX - cakeDrag.box.left) / cakeDrag.box.width;
+    const progress = (cakeDrag.startX > 0.5 ? 0.87 - position : position - 0.13) / 0.74;
+    cakeScene.style.setProperty("--knife-x", `${Math.max(8, Math.min(92, position * 100))}%`);
+    cakeScene.style.setProperty("--cut-progress", `${Math.max(0, Math.min(100, progress * 100))}%`);
   });
   cakeScene.addEventListener("pointerup", event => endCakeDrag(event));
   cakeScene.addEventListener("pointercancel", event => endCakeDrag(event, true));
@@ -369,20 +370,10 @@
     wishButton.setAttribute("aria-label", blown ? "Relight the candle" : "Blow out the candle");
     document.getElementById("candle-hint").textContent = blown ? "Tap to relight." : "Tap the candle when you're ready.";
     document.getElementById("wish-message").textContent = blown ? "Wish made. Your secret's safe." : "Ready for another wish.";
-    celebrate(blown ? 110 : 28, pointAt(wishButton));
+    if (blown) celebrate(24, pointAt(wishButton));
   });
   sliceButton.addEventListener("click", () => {
-    if (!cakeScene.classList.contains("sliced")) {
-      cutCake(pointAt(cakeScene));
-    } else {
-      cakeScene.classList.remove("wished", "sliced");
-      cakeScene.setAttribute("aria-disabled", "false");
-      cakeMessage.textContent = "The first slice is yours.";
-      cakeInstructions.textContent = "Drag across the cake to slice it. Or press Enter.";
-      sliceButton.textContent = "Cut the cake \u2661";
-      cakeScene.focus({ preventScroll: true });
-      celebrate(24, pointAt(cakeScene));
-    }
+    cutCake(pointAt(cakeScene));
   });
 
   config.wishes.forEach((wish, index) => {
@@ -429,9 +420,9 @@
     playing = isPlaying;
     document.body.classList.toggle("playing", playing);
     soundToggle.setAttribute("aria-pressed", String(playing));
-    soundToggle.setAttribute("aria-label", playing ? "Pause music" : "Play music");
+    soundToggle.setAttribute("aria-label", `${playing ? "Pause" : "Play"} ${spotify.uri ? config.songTitle || "our song" : "music"}`);
     songButton.setAttribute("aria-pressed", String(playing));
-    document.getElementById("sound-label").textContent = playing ? "sound on" : "sound off";
+    document.getElementById("sound-label").textContent = spotify.uri ? playing ? "pause song" : "play song" : playing ? "sound on" : "sound off";
     songButton.textContent = playing ? "Pause music \u2161" : "Play music \u266b";
   }
   function scheduleMelody() {
@@ -465,31 +456,174 @@
     if (audio) audio.pause();
     for (const voice of voices) voice.stop();
     voices.clear();
-    if (spotifyEmbedUrl) {
+    if (spotify.uri) {
+      spotify.generation++;
+      clearTimeout(spotify.readyTimer);
+      clearTimeout(spotify.actionTimer);
+      spotify.action = null;
+      spotify.ready = false;
+      spotify.loading = false;
+      if (spotify.controller) {
+        spotify.controller.destroy();
+        spotify.controller = null;
+      }
       spotifyPlayer.replaceChildren();
       spotifyPlayer.hidden = true;
-      return;
+      soundToggle.disabled = false;
+      soundToggle.removeAttribute("aria-busy");
+      musicStatus.textContent = "";
+      clearSpotifyError();
     }
     updateMusicState(false);
   }
-  function showSpotifyPlayer() {
-    if (!spotifyPlayer.firstElementChild) {
-      const frame = document.createElement("iframe");
-      frame.title = `${config.songTitle || "Our song"} on Spotify`;
-      frame.src = spotifyEmbedUrl;
-      frame.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
-      frame.referrerPolicy = "no-referrer";
-      frame.addEventListener("error", () => {
-        reportError("Spotify couldn't load. Check your connection or use the direct song link below.", new Error("Spotify iframe failed"));
-      });
-      spotifyPlayer.append(frame);
+  function setMusicStatus(message) {
+    if (musicStatus.textContent !== message) musicStatus.textContent = message;
+  }
+  function clearSpotifyError() {
+    if (spotify.error && errorBox.textContent === spotify.error) {
+      errorBox.hidden = true;
+      errorBox.textContent = "";
     }
+    spotify.error = "";
+  }
+  function reportSpotifyError(message, error) {
+    spotify.loading = false;
+    soundToggle.disabled = false;
+    soundToggle.removeAttribute("aria-busy");
+    if (!spotify.ready) {
+      document.getElementById("sound-label").textContent = "retry song";
+      soundToggle.setAttribute("aria-label", "Retry loading our song");
+    }
+    spotify.error = message;
+    setMusicStatus(message);
+    reportError(message, error);
+  }
+  function loadSpotifyApi() {
+    if (!spotify.apiPromise) {
+      spotify.apiPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        const fail = error => {
+          clearTimeout(timer);
+          script.remove();
+          spotify.apiPromise = null;
+          reject(error);
+        };
+        const timer = setTimeout(() => fail(new Error("Spotify API loading timed out")), 15000);
+        window.onSpotifyIframeApiReady = api => {
+          clearTimeout(timer);
+          resolve(api);
+        };
+        script.src = "https://open.spotify.com/embed/iframe-api/v1";
+        script.async = true;
+        script.addEventListener("error", () => fail(new Error("Spotify API could not load")), { once: true });
+        document.head.append(script);
+      });
+    }
+    return spotify.apiPromise;
+  }
+  async function showSpotifyPlayer() {
     spotifyPlayer.hidden = false;
+    if (spotify.ready || spotify.loading) return;
+    const generation = ++spotify.generation;
+    spotify.loading = true;
+    soundToggle.disabled = true;
+    soundToggle.setAttribute("aria-busy", "true");
+    document.getElementById("sound-label").textContent = "loading...";
+    setMusicStatus("Loading the instrumental...");
+    clearTimeout(spotify.readyTimer);
+    if (spotify.controller) {
+      spotify.controller.destroy();
+      spotify.controller = null;
+    }
+    try {
+      const api = await loadSpotifyApi();
+      if (generation !== spotify.generation || experience.hidden) return;
+      const placeholder = document.createElement("div");
+      spotifyPlayer.replaceChildren(placeholder);
+      spotify.readyTimer = setTimeout(() => {
+        if (generation === spotify.generation && !spotify.ready) {
+          reportSpotifyError("Spotify is taking too long to load. Retry, or open the track below.", new Error("Spotify player readiness timed out"));
+        }
+      }, 15000);
+      api.createController(placeholder, { uri: spotify.uri, width: "100%", height: 152 }, controller => {
+        if (generation !== spotify.generation || experience.hidden) {
+          controller.destroy();
+          return;
+        }
+        spotify.controller = controller;
+        const frame = spotifyPlayer.querySelector("iframe");
+        if (!frame) {
+          reportSpotifyError("Spotify couldn't create its player. Retry or open the track below.", new Error("Missing Spotify iframe"));
+          return;
+        }
+        frame.title = `${config.songTitle || "Our song"} on Spotify`;
+        frame.referrerPolicy = "no-referrer";
+        frame.loading = "eager";
+        controller.addListener("ready", () => {
+          if (generation !== spotify.generation) return;
+          clearTimeout(spotify.readyTimer);
+          spotify.ready = true;
+          spotify.loading = false;
+          spotify.position = 0;
+          soundToggle.disabled = false;
+          soundToggle.removeAttribute("aria-busy");
+          clearSpotifyError();
+          updateMusicState(false);
+          setMusicStatus("");
+        });
+        controller.addListener("playback_update", event => {
+          if (generation !== spotify.generation) return;
+          const { isPaused, isBuffering, position } = event.data;
+          if (typeof isPaused !== "boolean" || typeof isBuffering !== "boolean" || !Number.isFinite(position)) {
+            reportSpotifyError("Spotify returned an unreadable playback status. Please use its player directly.", new Error("Invalid Spotify playback update"));
+            return;
+          }
+          spotify.position = position;
+          if (playing !== !isPaused) updateMusicState(!isPaused);
+          const action = spotify.action;
+          const progressed = action && position > 100 && (position > action.position + 100 || position < action.position);
+          if (action && ((action.playing && !isPaused && !isBuffering && progressed) || (!action.playing && isPaused))) {
+            clearTimeout(spotify.actionTimer);
+            spotify.action = null;
+            clearSpotifyError();
+          }
+          if (!isPaused || !spotify.action) {
+            soundToggle.disabled = false;
+            soundToggle.removeAttribute("aria-busy");
+          }
+          setMusicStatus(isBuffering ? "Buffering..." : spotify.action?.playing ? "Starting the instrumental..." : isPaused ? "Paused" : "Playing");
+        });
+      });
+    } catch (error) {
+      if (generation !== spotify.generation || experience.hidden) return;
+      clearTimeout(spotify.readyTimer);
+      reportSpotifyError("Spotify couldn't load. Retry, check your connection, or open the track below.", error);
+    }
   }
   async function toggleMusic() {
-    if (spotifyEmbedUrl) {
-      showSpotifyPlayer();
-      spotifyPlayer.scrollIntoView({ behavior: reducedMotion.matches ? "instant" : "smooth", block: "center" });
+    if (spotify.uri) {
+      if (!spotify.ready || !spotify.controller) {
+        showSpotifyPlayer();
+        spotifyPlayer.scrollIntoView({ behavior: reducedMotion.matches ? "instant" : "smooth", block: "center" });
+        return;
+      }
+      clearTimeout(spotify.actionTimer);
+      spotify.action = { playing: !playing, position: spotify.position };
+      soundToggle.disabled = true;
+      soundToggle.setAttribute("aria-busy", "true");
+      setMusicStatus(playing ? "Pausing..." : "Starting the instrumental...");
+      spotify.actionTimer = setTimeout(() => {
+        const starting = spotify.action?.playing;
+        spotify.action = null;
+        reportSpotifyError(starting ? "Spotify didn't confirm playback. Use Play in the player or open the track below; Spotify may require sign-in." : "Spotify didn't confirm the pause. Please use Pause in its player.", new Error("Spotify playback command timed out"));
+      }, 12000);
+      try {
+        spotify.controller.togglePlay();
+      } catch (error) {
+        clearTimeout(spotify.actionTimer);
+        spotify.action = null;
+        reportSpotifyError("Spotify couldn't change playback. Please use its player directly.", error);
+      }
       return;
     }
     if (audioPending) return;
@@ -528,15 +662,14 @@
   }
   soundToggle.addEventListener("click", toggleMusic);
   songButton.addEventListener("click", toggleMusic);
-  document.addEventListener("visibilitychange", () => { if (document.hidden && !spotifyEmbedUrl) stopMusic(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && !spotify.uri) stopMusic(); });
   window.addEventListener("pagehide", stopMusic);
   window.addEventListener("pageshow", () => {
-    if (spotifyEmbedUrl && !experience.hidden) showSpotifyPlayer();
+    if (spotify.uri && !experience.hidden) showSpotifyPlayer();
   });
 
   document.getElementById("hug-button").addEventListener("click", () => {
     document.getElementById("hug-message").textContent = `A proper one when I see you, ${config.nickname}. \u2661`;
-    celebrate(110, pointAt(document.getElementById("hug-button")));
   });
   document.getElementById("lock-button").addEventListener("click", () => {
     stopMusic();
@@ -547,20 +680,5 @@
     document.querySelectorAll(".confetti").forEach(container => container.replaceChildren());
     window.scrollTo({ top: 0, behavior: "instant" });
     codeInput.focus({ preventScroll: true });
-  });
-  document.addEventListener("click", event => {
-    if (!(event.target instanceof Element) || event.target.closest("[data-effects-toggle], #wish-button, #slice-button, #hug-button")) return;
-    if (window.getSelection()?.isCollapsed === false) return;
-    const target = event.target.closest("button, a, .letter, .polaroid");
-    if (target?.disabled) return;
-    const origin = event.detail > 0 ? { x: event.clientX, y: event.clientY } : target ? pointAt(target) : undefined;
-    const count = event.target.closest("[data-digit], #delete-digit, #secret-code") ? 10 : event.target.closest("#camera, .gallery-photo, .wish-card") ? 34 : 18;
-    celebrate(count, origin);
-    if (target && effectsEnabled) {
-      target.classList.remove("click-glow");
-      void target.offsetWidth;
-      target.classList.add("click-glow");
-      target.addEventListener("animationend", () => target.classList.remove("click-glow"), { once: true });
-    }
   });
 })();

@@ -17,16 +17,18 @@ the date riddle, with no separate code hint. The code remains 1711.
 The note uses the user's supplied wording, emojis and sign-off. Edit
 letterGreeting, letter, signoff and sender in config.js to change it.
 Wrap a phrase in single asterisks for italics, such as *my woman*.
-birthDate stores only month and day in MM-DD format; no birth year is needed.
+heroTagline controls the badge below Ritu; it currently reads "One degree hotter".
 
 CELEBRATIONS
-The lavender theme uses original butterfly and cake artwork. Each click
-adds a short burst of butterflies, stars, hearts or bright confetti.
-Photo-viewer celebrations render inside its dialog, without covering controls.
+The lavender theme uses original butterfly and cake artwork. Small celebrations
+are reserved for the final memory reveal, the completed cake cut and blowing
+out the candle. Ordinary clicks, keypad presses, photo navigation and card
+opening do not trigger confetti.
 "Pause effects" stops decorative motion; system reduced-motion preferences
 disable animated effects automatically. No sound effects or microphone are used.
-The cake can be sliced by dragging horizontally across its middle in either
-direction. A short drag, vertical scroll or cancelled gesture does not cut it.
+The unlettered cake uses a horizontal knife track. Drag from near one edge
+all the way to the other, then release. Short or cancelled gestures and vertical
+scrolling do not cut it. A completed cut shows two slices, once per page visit.
 Press Enter/Space on the cake, or use "Cut the cake", as a keyboard alternative.
 The separate "Make a wish" candle goes out with a tap, showing a smoke trail
 and butterfly celebration. Tap again to relight it. Cutting and wishing are
@@ -34,6 +36,8 @@ independent, and the existing letter, photos, captions and music are unchanged.
 
 PHOTOS
 The eight Card photos are copied into photos/memories for the camera.
+Each camera click adds one photo to the showcase and keeps earlier photos
+visible. After the eighth click the camera is disabled; refresh to start over.
 The nine usss photos are copied into photos/us for the couple gallery.
 ThisDayLastYear.jpeg is in the couple gallery, matching the updated folders.
 The originals in Downloads have not been changed.
@@ -51,10 +55,14 @@ Soundtrack: https://open.spotify.com/album/2BqTOf0JUe4yWKtrOA30V8
 Direct track: https://open.spotify.com/track/7rWlLVZL4MI8oDADfrG4hy
 Spotify's official player appears directly in the song section after you
 unlock the surprise. Press Play there; no extra loader button is required.
-The header's "our song" button takes you to the same player. Nothing autoplays.
+The header music button controls play/pause through Spotify's official iFrame
+API. It is disabled while loading and its state follows real playback updates.
+The visible player remains usable directly. Nothing autoplays.
 Spotify is contacted after unlocking, not while the entrance is locked.
 Playback depends on Spotify availability and may require a sign-in or offer
 only a preview. The direct link remains available if the embed is blocked.
+If a playback command is not confirmed, an explicit status message is shown
+instead of claiming that the song started. No recording is extracted or hosted.
 Switching tabs keeps the player in place. Relocking unloads it to stop playback;
 unlocking again restores it. Returning via browser history restores it as well.
 No copyrighted recording has been downloaded or bundled.

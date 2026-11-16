@@ -4,11 +4,11 @@
 window.SURPRISE = {
   name: "Ritika",
   nickname: "Ritu",
-  birthDate: "11-17",
   sender: "You future husband",
   secretCode: "1711",
   occasion: "17 NOVEMBER. YOUR DAY.",
   heroIntro: "Happy birthday,",
+  heroTagline: "One degree hotter",
   heroMessage: "A few favourite photos. A few things I wanted to say.\nAll for you.",
   letterGreeting: "Happy Birthday, my lavender girl! \uD83D\uDC9C",
   letter: [
